@@ -6,12 +6,16 @@ class PostBase(BaseModel):
     title: str
     content: str
     published: bool = True
+    comment: str
 
 class PostCreate(PostBase):
     pass
 
 class PostUpdate(PostBase):
-    pass
+    # title: Optional[str]
+    # content: Optional[str]
+    # published: bool = True
+    comment: str
 
 
 #---------------------RESPONSE MODEL

@@ -158,7 +158,6 @@ def update_post(updated_post: schemas.PostUpdate, id:int, db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
     
     post_query.update(updated_post.dict(), synchronize_session=False)
-    print(updated_post.dict())
 
     db.commit()
     return post_query.first()
