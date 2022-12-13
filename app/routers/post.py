@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Response, APIRouter
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import oauth2
@@ -132,6 +133,16 @@ def get_post(db : Session = Depends(get_db), current_user: int = Depends(oauth2.
     post = db.query(models.Post).filter(models.Post.owner_id==current_user.id).all() #to get only loggedin user post, comment above query for this to work
     return post
 
+# @router.get("",status_code=status.HTTP_200_OK, response_model=List[schemas.PostResponse])
+@router.get("",status_code=status.HTTP_200_OK)
+def get_post(db : Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user),limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    print(limit)
+    post = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    # post = db.query(models.Post).filter(models.Post.owner_id==current_user.id).all() #to get only loggedin user post, comment above query for this to work
+
+    results = db.query(models.Post, func.count(models.Vote.post_id).label("Votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
+    return results
+
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id:int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     post = db.query(models.Post).filter(models.Post.id==id).first()
@@ -153,7 +164,5 @@ def update_post(updated_post: schemas.PostUpdate, id:int, db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"post with id {id} not found")
     
     post_query.update(updated_post.dict(), synchronize_session=False)
-    print(updated_post.dict())
-
     db.commit()
     return post_query.first()
