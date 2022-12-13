@@ -128,8 +128,8 @@ def get_post(id:int,db : Session = Depends(get_db), current_user: int = Depends(
 
 @router.get("",status_code=status.HTTP_200_OK, response_model=List[schemas.PostResponse])
 def get_post(db : Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    post = db.query(models.Post).all()
-    post = db.query(models.Post).filter(models.Post.owner_id==current_user.id).all() #to get only loggedin user post, comment aboce query for this to work
+    # post = db.query(models.Post).all()
+    post = db.query(models.Post).filter(models.Post.owner_id==current_user.id).all() #to get only loggedin user post, comment above query for this to work
     return post
 
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
